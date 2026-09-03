@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siswa Biodata HUD - Celestial Edition</title>
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* TEMA 1: EMAS SURGAWI (DEFAULT) */
+        body.theme-gold {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #31103f 100%);
+            --card-bg: rgba(255, 255, 255, 0.12);
+            --accent-gold: #f59e0b;
+            --accent-glow: #fde047;
+            --border-color: rgba(245, 158, 11, 0.4);
+            --text-main: #ffffff;
+            --text-sub: #cbd5e1;
+            --halo-glow: rgba(250, 204, 21, 0.6);
+        }
+
+        /* TEMA 2: BIRU GALAKSI */
+        body.theme-blue {
+            --bg-gradient: linear-gradient(135deg, #020617 0%, #0c4a6e 40%, #0369a1 100%);
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --accent-gold: #38bdf8;
+            --accent-glow: #7dd3fc;
+            --border-color: rgba(56, 189, 248, 0.4);
+            --text-main: #ffffff;
+            --text-sub: #bae6fd;
+            --halo-glow: rgba(56, 189, 248, 0.6);
+        }
+
+        /* TEMA 3: UNGU MISTIS */
+        body.theme-purple {
+            --bg-gradient: linear-gradient(135deg, #09090b 0%, #3b0764 40%, #581c87 100%);
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --accent-gold: #c084fc;
+            --accent-glow: #e879f9;
+            --border-color: rgba(192, 132, 252, 0.4);
+            --text-main: #ffffff;
+            --text-sub: #e9d5ff;
+            --halo-glow: rgba(232, 121, 249, 0.6);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            perspective: 1000px;
+            text-align: center;
+            touch-action: pan-y;
+            transition: background 0.8s ease;
+        }
+
+        #heavenCanvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+        #interactiveCanvas { position: fixed; inset: 0; z-index: 9999; pointer-events: none; }
+
+        .ambient-glow {
+            position: fixed; width: 500px; height: 500px;
+            background: radial-gradient(circle, var(--halo-glow) 0%, rgba(0,0,0,0) 70%);
+            z-index: 2; pointer-events: none;
+            animation: pulseGlow 6s infinite alternate ease-in-out;
+            transition: background 0.8s ease;
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: scale(0.9); opacity: 0.6; }
+            100% { transform: scale(1.15); opacity: 1; }
+        }
+
+        .cloud-overlay {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.15), transparent 70%);
+            z-index: 3; pointer-events: none;
+        }
+
+        /* TOMBOL KONTROL ATAS */
+        .top-controls {
+            position: fixed; top: 20px; right: 20px; z-index: 100;
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        .theme-switcher, .lang-switcher {
+            display: flex; gap: 4px; background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color); padding: 4px; border-radius: 30px;
+            backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            transition: border-color 0.5s;
+        }
+
+        .theme-btn, .lang-btn {
+            width: 36px; height: 36px; border-radius: 50%; border: none;
+            background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: transform 0.3s, background 0.3s, box-shadow 0.3s;
+            color: var(--text-main); font-size: 0.75rem; font-weight: 700; font-family: 'Cinzel', serif;
+        }
+
+        .theme-btn:hover, .lang-btn:hover { transform: scale(1.15); background: rgba(255, 255, 255, 0.15); }
+        
+        .theme-btn.active, .lang-btn.active {
+            background: var(--accent-gold);
+            box-shadow: 0 0 15px var(--accent-glow);
+            transform: scale(1.1);
+            color: #0f172a !important;
+        }
+        .theme-btn.active i { color: #0f172a !important; }
+
+        .music-btn {
+            background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color);
+            color: var(--accent-glow); width: 44px; height: 44px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; backdrop-filter: blur(10px);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .music-btn:hover {
+            background: var(--accent-gold); color: #0f172a;
+            box-shadow: 0 0 25px var(--accent-glow); transform: scale(1.1);
+        }
+
+        /* GAME UI HUD */
+        #gameUI {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: rgba(15, 23, 42, 0.85); padding: 12px 18px; border-radius: 15px;
+            border: 1px solid var(--accent-gold); display: none; text-align: left;
+            backdrop-filter: blur(10px); box-shadow: 0 0 20px rgba(0,0,0,0.4);
+        }
+        #gameUI.active { display: block; }
+        .game-score { font-family: 'Cinzel', serif; font-size: 1.3rem; color: var(--accent-glow); text-shadow: 0 0 10px var(--halo-glow); font-weight: 700; }
+
+        .gate-container {
+            position: fixed; inset: 0; z-index: 98; pointer-events: none; display: flex;
+        }
+
+        .gate-door {
+            width: 50%; height: 100%;
+            background: linear-gradient(135deg, rgba(30, 27, 75, 0.98), rgba(15, 23, 42, 0.98));
+            position: relative; transition: transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);
+            display: flex; align-items: center;
+        }
+
+        .gate-door.left { border-right: 2px solid var(--accent-gold); justify-content: flex-end; }
+        .gate-door.right { border-left: 2px solid var(--accent-gold); justify-content: flex-start; }
+
+        .gate-door::before {
+            content: ''; position: absolute; top: 10%; bottom: 10%; width: 80%;
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px;
+        }
+        .gate-door.left::before { right: 5%; }
+        .gate-door.right::before { left: 5%; }
+
+        .gate-container.open .gate-door.left { transform: translate3d(-100%, 0, 0); }
+        .gate-container.open .gate-door.right { transform: translate3d(100%, 0, 0); }
+
+        .heaven-flash {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle, rgba(255,255,255,1) 0%, var(--accent-glow) 40%, rgba(0,0,0,0) 80%);
+            z-index: 97; opacity: 0; pointer-events: none; transition: opacity 0.8s;
+        }
+        .heaven-flash.active { opacity: 1; }
+
+        #startScreen {
+            position: fixed; inset: 0; z-index: 99; background: rgba(15, 23, 42, 0.85);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            backdrop-filter: blur(12px); transition: opacity 0.8s, visibility 0.8s;
+        }
+
+        #startScreen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+        .start-title {
+            font-family: 'Cinzel', serif; font-size: 1.8rem; font-weight: 800;
+            letter-spacing: 4px; color: var(--accent-glow); margin-bottom: 8px; text-shadow: 0 0 20px var(--halo-glow);
+        }
+
+        .start-sub {
+            font-size: 0.85rem; color: var(--text-sub); letter-spacing: 3px;
+            margin-bottom: 30px; text-transform: uppercase;
+        }
+
+        .start-btn {
+            background: rgba(255, 255, 255, 0.1); border: 2px solid var(--accent-gold);
+            color: var(--accent-glow); padding: 12px 36px; border-radius: 30px;
+            font-family: 'Cinzel', serif; font-size: 0.95rem; font-weight: 700;
+            letter-spacing: 2px; cursor: pointer; box-shadow: 0 0 25px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s; display: flex; align-items: center; gap: 12px;
+        }
+
+        .start-btn:hover {
+            background: var(--accent-gold); color: #0f172a;
+            box-shadow: 0 0 40px var(--accent-glow); transform: scale(1.05);
+        }
+
+        .card-wrapper {
+            position: relative; z-index: 10; width: 100%; max-width: 410px; margin: 20px;
+            opacity: 0; transform: translate3d(0, 40px, 0) scale(0.92);
+            transition: transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.9s ease-out;
+        }
+
+        .card-wrapper.show { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+        .card-wrapper.floating { animation: floatCard 6s ease-in-out infinite alternate; }
+
+        @keyframes floatCard {
+            0% { transform: translate3d(0, 0px, 0); }
+            100% { transform: translate3d(0, -10px, 0); }
+        }
+
+        .space-card {
+            width: 100%; background: var(--card-bg);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color); border-radius: 24px;
+            padding: 28px 24px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 0, 0, 0.2);
+            text-align: center; position: relative;
+            transition: border-color 0.5s, background 0.5s;
+        }
+
+        .hud-line-top {
+            position: absolute; top: 0; left: 20%; right: 20%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .hud-corner { position: absolute; width: 12px; height: 12px; border: 2px solid var(--accent-gold); border-radius: 3px; }
+        .hud-corner.tl { top: 12px; left: 12px; border-right: none; border-bottom: none; }
+        .hud-corner.tr { top: 12px; right: 12px; border-left: none; border-bottom: none; }
+        .hud-corner.bl { bottom: 12px; left: 12px; border-right: none; border-top: none; }
+        .hud-corner.br { bottom: 12px; right: 12px; border-left: none; border-top: none; }
+
+        .corner-tag {
+            position: absolute; top: 14px; right: 20px; font-family: 'Cinzel', serif;
+            font-size: 0.65rem; font-weight: 700; color: var(--accent-glow); letter-spacing: 2px;
+            display: flex; align-items: center; gap: 6px;
+        }
+
+        .dot {
+            width: 6px; height: 6px; background: var(--accent-glow); border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-glow); animation: pulse 1.5s infinite alternate ease-in-out;
+        }
+        @keyframes pulse { from { opacity: 0.4; } to { opacity: 1; } }
+
+        .profile-header { text-align: center; margin-bottom: 15px; }
+
+        .avatar-container {
+            position: relative; width: 110px; height: 110px; margin: 0 auto 28px;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+
+        .avatar-img {
+            width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
+            border: 3px solid #ffffff; box-shadow: 0 0 20px var(--halo-glow); 
+            position: relative; z-index: 5; transition: transform 0.4s ease;
+        }
+
+        .avatar-ring {
+            position: absolute; inset: -6px; border: 3px solid transparent;
+            border-top-color: #ffffff; border-bottom-color: var(--accent-glow); border-radius: 50%;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4), inset 0 0 10px var(--halo-glow);
+            animation: spin 3s linear infinite; transition: all 0.3s;
+        }
+
+        .avatar-ring-2 {
+            position: absolute; inset: -14px; border: 2px dashed rgba(255, 255, 255, 0.8);
+            border-radius: 50%; animation: spinReverse 7s linear infinite;
+        }
+
+        .avatar-ring-3 {
+            position: absolute; inset: -22px; border: 1px dotted var(--accent-glow);
+            border-radius: 50%; animation: spin 12s linear infinite; opacity: 0.7;
+        }
+
+        .orbit-light {
+            position: absolute; width: 100%; height: 100%; inset: -6px;
+            animation: spin 4s cubic-bezier(0.4, 0, 0.2, 1) infinite; z-index: 6; pointer-events: none;
+        }
+
+        .orbit-light::after {
+            content: ''; position: absolute; top: -4px; left: 50%; transform: translateX(-50%);
+            width: 8px; height: 8px; background: #ffffff; border-radius: 50%; box-shadow: 0 0 15px 5px var(--accent-glow); 
+        }
+
+        .avatar-container:hover .avatar-ring { animation-duration: 1s; box-shadow: 0 0 25px rgba(255,255,255,0.8), inset 0 0 20px var(--halo-glow); }
+        .avatar-container:hover .avatar-ring-2 { animation-duration: 2s; }
+        .avatar-container:hover .avatar-img { transform: scale(1.08); }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes spinReverse { 100% { transform: rotate(-360deg); } }
+
+        .profile-header h1 {
+            font-family: 'Cinzel', serif; font-size: 1.45rem; font-weight: 800;
+            letter-spacing: 2px; color: var(--text-main); text-shadow: 0 0 12px var(--halo-glow);
+        }
+        .profile-header p { font-size: 0.8rem; color: var(--text-sub); letter-spacing: 2px; text-transform: uppercase; margin-top: 3px; }
+
+        .heaven-clock-container { display: flex; justify-content: center; margin-bottom: 12px; }
+        .heaven-clock {
+            display: inline-flex; align-items: center; gap: 10px; padding: 6px 18px;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color);
+            border-radius: 30px; box-shadow: 0 0 15px rgba(0, 0, 0, 0.15), inset 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .heaven-clock i { color: var(--accent-glow); font-size: 0.8rem; animation: pulseGlow 2s infinite alternate; }
+        .heaven-clock #timeDisplay {
+            font-family: 'Cinzel', serif; font-size: 1.1rem; font-weight: 800; color: var(--text-main);
+            letter-spacing: 3px; text-shadow: 0 0 12px var(--halo-glow);
+        }
+        .heaven-clock .meridiem { font-size: 0.7rem; color: var(--text-sub); font-weight: 600; letter-spacing: 2px; }
+
+        .heaven-equalizer {
+            display: flex; align-items: flex-end; justify-content: center; gap: 4px;
+            height: 20px; margin-bottom: 18px; opacity: 0.8; transition: opacity 0.3s ease;
+        }
+        .eq-bar {
+            width: 4px; height: 4px;
+            background: linear-gradient(to top, var(--accent-gold), var(--accent-glow));
+            border-radius: 4px; box-shadow: 0 0 8px var(--accent-glow);
+            animation: eqPulse 1.2s ease-in-out infinite alternate;
+        }
+        .eq-bar:nth-child(1) { animation-duration: 0.7s; }
+        .eq-bar:nth-child(2) { animation-duration: 0.4s; }
+        .eq-bar:nth-child(3) { animation-duration: 1.0s; }
+        .eq-bar:nth-child(4) { animation-duration: 0.6s; }
+        .eq-bar:nth-child(5) { animation-duration: 0.8s; }
+        .eq-bar:nth-child(6) { animation-duration: 0.5s; }
+        .eq-bar:nth-child(7) { animation-duration: 0.9s; }
+
+        @keyframes eqPulse {
+            0% { height: 4px; opacity: 0.3; }
+            100% { height: 18px; opacity: 1; box-shadow: 0 0 12px var(--accent-glow); }
+        }
+
+        .heaven-equalizer.paused .eq-bar {
+            animation-play-state: paused;
+            height: 4px !important;
+            opacity: 0.2;
+        }
+
+        .tabs {
+            display: flex; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 4px; margin-bottom: 20px; position: relative; z-index: 5;
+        }
+        .tab-btn {
+            flex: 1; background: transparent; border: none; color: var(--text-sub);
+            padding: 8px 0; font-family: 'Cinzel', serif; font-size: 0.75rem; font-weight: 700;
+            cursor: pointer; border-radius: 8px; transition: all 0.3s ease;
+        }
+        .tab-btn.active { background: var(--accent-gold); color: #0f172a; box-shadow: 0 0 15px var(--halo-glow); }
+
+        .tab-content { display: none; animation: fadeIn 0.4s forwards; position: relative; z-index: 5; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translate3d(0, 8px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+
+        .info-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+        .info-item {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 14px; border-radius: 12px; transition: all 0.3s; cursor: pointer;
+        }
+        .info-item:hover { border-color: var(--accent-gold); background: rgba(255, 255, 255, 0.12); transform: translateY(-2px); }
+        .info-item i { color: var(--accent-glow); font-size: 1.1rem; }
+        .info-text label { display: block; font-size: 0.65rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px; }
+        .info-text span { font-size: 0.88rem; font-weight: 600; color: var(--text-main); }
+
+        .skill-group { display: flex; flex-direction: column; gap: 12px; }
+        .skill-item label { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px; font-weight: 600; color: var(--text-main); }
+        .bar-bg { height: 7px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; border: 1px solid var(--border-color); overflow: hidden; }
+        .bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent-gold), var(--accent-glow)); box-shadow: 0 0 12px var(--accent-glow); border-radius: 10px; }
+
+        .social-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; position: relative; z-index: 10; }
+        .social-btn {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border-color);
+            padding: 12px 10px; border-radius: 12px; color: var(--text-main); text-decoration: none;
+            font-size: 0.8rem; font-weight: 600; transition: all 0.3s;
+            cursor: pointer; position: relative; z-index: 10; pointer-events: auto;
+        }
+        .social-btn:hover { background: var(--accent-gold); color: #0f172a; box-shadow: 0 0 20px var(--accent-glow); transform: translateY(-2px); }
+
+        .toast {
+            position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.95); border: 1px solid var(--accent-gold); color: var(--accent-glow);
+            padding: 8px 24px; border-radius: 20px; font-size: 0.8rem; box-shadow: 0 0 20px var(--halo-glow);
+            transition: bottom 0.4s; z-index: 100;
+        }
+        .toast.show { bottom: 25px; }
+    </style>
+</head>
+<body class="theme-gold">
+
+    <div class="ambient-glow"></div>
+    <div class="cloud-overlay"></div>
+    <div class="heaven-flash" id="flash"></div>
+
+    <div class="gate-container" id="gateContainer">
+        <div class="gate-door left"></div>
+        <div class="gate-door right"></div>
+    </div>
+
+    <!-- GAME HUD -->
+    <div id="gameUI">
+        <div style="font-size: 0.65rem; color: var(--text-sub); letter-spacing: 1px;">MODE: TANGKAP BINTANG</div>
+        <div class="game-score">BINTANG: <span id="gameScore">0</span></div>
+    </div>
+
+    <canvas id="heavenCanvas">
+    </canvas>
+    <canvas id="interactiveCanvas"></canvas>
+
+    <!-- AUDIO SFX & MUSIK LATAR -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="https://www.image2url.com/r2/default/audio/1786361687067-144e3975-ce3c-4fbc-b1a5-7dc4793e1696.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="clickSfx" src="https://www.myinstants.com/media/sounds/bell-ring-01.mp3" preload="auto"></audio>
+    <audio id="copySfx" src="https://www.myinstants.com/media/sounds/magic-chime.mp3" preload="auto"></audio>
+
+    <!-- KONTROL ATAS (TEMA, BAHASA & MUSIK) -->
+    <div class="top-controls">
+        <div class="lang-switcher">
+            <button class="lang-btn active" onclick="setLanguage('id', this)">ID</button>
+            <button class="lang-btn" onclick="setLanguage('en', this)">EN</button>
+        </div>
+        <div class="theme-switcher">
+            <button class="theme-btn active" onclick="setTheme('gold', this)" title="Emas Surgawi"><i class="fa-solid fa-sun" style="color: #fde047;"></i></button>
+            <button class="theme-btn" onclick="setTheme('blue', this)" title="Biru Galaksi"><i class="fa-solid fa-water" style="color: #38bdf8;"></i></button>
+            <button class="theme-btn" onclick="setTheme('purple', this)" title="Ungu Mistis"><i class="fa-solid fa-moon" style="color: #c084fc;"></i></button>
+        </div>
+        <button class="music-btn" onclick="toggleMusic()" title="Mute/Unmute Musik">
+            <i class="fa-solid fa-volume-xmark" id="musicIcon"></i>
+        </button>
+    </div>
+
+    <div id="startScreen">
+        <div class="start-title"><i class="fa-solid fa-feather-pointed"></i> CELESTIAL REALM</div>
+        <div class="start-sub" id="startSubText">HEAVENLY PROFILE SYSTEM</div>
+        <button class="start-btn" onclick="startSystem()">
+            <i class="fa-solid fa-sun"></i> <span id="startBtnText">BUKA BIODATA SURGA</span>
+        </button>
+    </div>
+
+    <div class="card-wrapper" id="cardWrapper">
+        <div class="space-card" data-tilt data-tilt-max="4" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.15">
+            
+            <div class="hud-line-top"></div>
+            <div class="hud-corner tl"></div>
+            <div class="hud-corner tr"></div>
+            <div class="hud-corner bl"></div>
+            <div class="hud-corner br"></div>
+
+            <div class="corner-tag"><div class="dot"></div> BLESSED</div>
+
+            <div class="profile-header">
+                <div class="avatar-container" title="Klik 3x untuk Easter Egg Game!">
+                    <div class="avatar-ring"></div>
+                    <div class="avatar-ring-2"></div>
+                    <div class="avatar-ring-3"></div>
+                    <div class="orbit-light"></div>
+                    <img src="https://files.catbox.moe/ez14en.jpg" alt="Foto Profil" class="avatar-img">
+                </div>
+                <h1>GAIS HAIDAR</h1>
+                <p>CELESTIAL PROFILE</p>
+            </div>
+
+            <div class="heaven-clock-container">
+                <div class="heaven-clock">
+                    <i class="fa-solid fa-sparkles"></i>
+                    <span id="timeDisplay">00:00:00</span>
+                    <span class="meridiem" id="meridiemDisplay">AM</span>
+                    <i class="fa-solid fa-sparkles"></i>
+                </div>
+            </div>
+
+            <div class="heaven-equalizer paused" id="heavenEq" title="Frekuensi Energi Suci">
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('bio', this)" id="tabBio">BIODATA</button>
+                <button class="tab-btn" onclick="switchTab('minat', this)" id="tabScore">NILAI</button>
+                <button class="tab-btn" onclick="switchTab('kontak', this)" id="tabContact">KONTAK</button>
+            </div>
+
+            <div id="bio" class="tab-content active">
+                <ul class="info-list">
+                    <li class="info-item" onclick="copyText('Gais Haidar Rahmawan')">
+                        <i class="fa-solid fa-user-check"></i>
+                        <div class="info-text"><label id="lblNama">Nama Lengkap</label><span>Gais Haidar Rahmawan</span></div>
+                    </li>
+                    <li class="info-item" onclick="copyText('SMK Tamansiswa Mojoagung')">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                        <div class="info-text"><label id="lblEDUCATION">EDUCATION</label><span>SMK Tamansiswa Mojoagung</span></div>
+                    </li>
+                    <li class="info-item" onclick="copyText('Computer & Network Engineering (TKJ)')">
+                        <i class="fa-solid fa-network-wired"></i>
+                        <div class="info-text"><label id="lblSPECIALIZATION">SPECIALIZATION</label><span>Computer & Network Engineering</span></div>
+                    </li>
+                    <li class="info-item" onclick="copyText('Networking • MikroTik • Linux')">
+                        <i class="fa-solid fa-book-bookmark"></i>
+                        <div class="info-text"><label id="lblSKILLS">SKILLS</label><span>Networking • MikroTik • Linux</span></div>
+                    </li>
+                    <li class="info-item" onclick="copyText('Software Engineer')">
+                        <i class="fa-solid fa-crown"></i>
+                        <div class="info-text"><label id="lblCita">CAREER INTEREST</label><span>Software Engineer</span></div>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="minat" class="tab-content">
+                <div class="skill-group">
+                    <div class="skill-item">
+                        <label><span id="skill1">Informatika & Coding</span> <span>95%</span></label>
+                        <div class="bar-bg"><div class="bar-fill" style="width: 95%;"></div></div>
+                    </div>
+                    <div class="skill-item">
+                        <label><span id="skill2">Matematika / Fisika</span> <span>90%</span></label>
+                        <div class="bar-bg"><div class="bar-fill" style="width: 90%;"></div></div>
+                    </div>
+                    <div class="skill-item">
+                        <label><span id="skill3">Bahasa Inggris</span> <span>91%</span></label>
+                        <div class="bar-bg"><div class="bar-fill" style="width: 91%;"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="kontak" class="tab-content">
+                <div class="social-grid">
+                    <a href="https://instagram.com" target="_blank" class="social-btn" onclick="playClickSfx()"><i class="fa-brands fa-instagram"></i> Instagram</a>
+                    <a href="https://tiktok.com/@gais.haidar.r" target="_blank" class="social-btn" onclick="playClickSfx()"><i class="fa-brands fa-tiktok"></i> TikTok</a>
+                    <a href="https://wa.me/" target="_blank" class="social-btn" onclick="playClickSfx()"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+                    <a href="mailto:gais@example.com" class="social-btn" onclick="playClickSfx()"><i class="fa-solid fa-envelope"></i> Email</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Deskripsi Data Diri!</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+
+    <script>
+        /* Kamus Bahasa (ID & EN) */
+        const translations = {
+            id: {
+                startSub: "HEAVENLY PROFILE SYSTEM",
+                startBtn: "BUKA BIODATA SURGA",
+                tabBio: "BIODATA",
+                tabScore: "NILAI",
+                tabContact: "KONTAK",
+                lblNama: "Nama Lengkap",
+                lblEDUCATION: "EDUCATION",
+                lblSPECIALIZATION: "SPECIALIZATION",
+                lblSKILLS: "SKILLS",
+                lblCita: "CAREER INTEREST",
+                skill1: "Informatika & Coding",
+                skill2: "Matematika / Fisika",
+                skill3: "Bahasa Inggris",
+                toastCopy: "Teks disalin ke papan klip!"
+            },
+            en: {
+                startSub: "HEAVENLY PROFILE SYSTEM",
+                startBtn: "OPEN HEAVEN PROFILE",
+                tabBio: "BIO",
+                tabScore: "SCORES",
+                tabContact: "CONTACT",
+                lblNama: "Full Name",
+                lblEDUCATION: "School",
+                lblSPECIALIZATION: "Major",
+                lbSKILLSl: "SKILLSl",
+                lblCita: "Dream Goal",
+                skill1: "Informatics & Coding",
+                skill2: "Mathematics / Physics",
+                skill3: "English",
+                toastCopy: "Text copied to clipboard!"
+            }
+        };
+
+        let currentLang = 'id';
+
+        function setLanguage(lang, btn) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+
+            const t = translations[lang];
+            document.getElementById('startSubText').innerText = t.startSub;
+            document.getElementById('startBtnText').innerText = t.startBtn;
+            document.getElementById('tabBio').innerText = t.tabBio;
+            document.getElementById('tabScore').innerText = t.tabScore;
+            document.getElementById('tabContact').innerText = t.tabContact;
+            document.getElementById('lblNama').innerText = t.lblNama;
+            document.getElementById('lblEDUCATION').innerText = t.lblEDUCATION;
+            document.getElementById('lblSPECIALIZATION').innerText = t.lblSPECIALIZATION;
+            document.getElementById('lblSKILLS').innerText = t.lblSKILLS;
+            document.getElementById('lblCita').innerText = t.lblCita;
+            document.getElementById('skill1').innerText = t.skill1;
+            document.getElementById('skill2').innerText = t.skill2;
+            document.getElementById('skill3').innerText = t.skill3;
+            playClickSfx();
+        }
+
+        function setTheme(theme, btn) {
+            const body = document.body;
+            body.classList.remove('theme-gold', 'theme-blue', 'theme-purple');
+            
+            document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            if (theme === 'blue') body.classList.add('theme-blue');
+            else if (theme === 'purple') body.classList.add('theme-purple');
+            else body.classList.add('theme-gold');
+            playClickSfx();
+        }
+
+        function updateHeavenClock() {
+            const now = new Date();
+            let hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds();
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+            
+            hours = hours % 12; hours = hours ? hours : 12; 
+            hours = hours < 10 ? '0' + hours : hours;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+
+            document.getElementById('timeDisplay').innerText = `${hours}:${minutes}:${seconds}`;
+            document.getElementById('meridiemDisplay').innerText = ampm;
+        }
+        setInterval(updateHeavenClock, 1000);
+        updateHeavenClock();
+
+        const canvas = document.getElementById('heavenCanvas');
+        const ctx = canvas.getContext('2d');
+        const iCanvas = document.getElementById('interactiveCanvas');
+        const iCtx = iCanvas.getContext('2d');
+        let starTrail = [];
+
+        // Mini-Game States
+        let gameActive = false;
+        let gameScore = 0;
+        let gameStars = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            iCanvas.width = window.innerWidth; iCanvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const particles = Array.from({ length: 50 }, () => ({
+            x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+            radius: Math.random() * 2 + 0.5, speedY: Math.random() * -0.5 - 0.2,
+            speedX: (Math.random() - 0.5) * 0.3, opacity: Math.random() * 0.8 + 0.2
+        }));
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            iCtx.clearRect(0, 0, iCanvas.width, iCanvas.height);
+            
+            ctx.fillStyle = '#fde047';
+            particles.forEach(p => {
+                p.y += p.speedY; p.x += p.speedX;
+                if (p.y < 0) { p.y = canvas.height; p.x = Math.random() * canvas.width; }
+                ctx.globalAlpha = p.opacity; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+
+            // Render Mini-Game Falling Stars
+            if (gameActive) {
+                gameStars.forEach((s, index) => {
+                    s.y += s.speed;
+                    iCtx.save();
+                    iCtx.fillStyle = '#fde047';
+                    iCtx.shadowBlur = 18;
+                    iCtx.shadowColor = '#fde047';
+                    iCtx.beginPath();
+                    iCtx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+                    iCtx.fill();
+                    iCtx.restore();
+
+                    if (s.y > iCanvas.height + 40) {
+                        gameStars.splice(index, 1);
+                    }
+                });
+            }
+
+            // Efek Jejak Partikel Bintang / Kilau Kursor Dinamis
+            for (let i = starTrail.length - 1; i >= 0; i--) {
+                let s = starTrail[i];
+                s.x += s.speedX; s.y += s.speedY; s.life -= s.decay; s.size *= 0.94; s.angle += 0.05;
+                if (s.life <= 0) { starTrail.splice(i, 1); } else {
+                    iCtx.save();
+                    iCtx.globalAlpha = s.life;
+                    iCtx.fillStyle = s.color;
+                    iCtx.shadowBlur = 12; iCtx.shadowColor = s.color;
+                    
+                    iCtx.translate(s.x, s.y);
+                    iCtx.rotate(s.angle);
+                    iCtx.fillRect(-s.size, -s.size/3, s.size*2, s.size/1.5);
+                    iCtx.fillRect(-s.size/3, -s.size, s.size/1.5, s.size*2);
+                    iCtx.restore();
+                }
+            }
+            iCtx.shadowBlur = 0;
+            requestAnimationFrame(animateCanvas);
+        }
+        requestAnimationFrame(animateCanvas);
+
+        class StarParticle {
+            constructor(x, y, isBurst = false) {
+                this.x = x; this.y = y;
+                this.size = Math.random() * (isBurst ? 7 : 3) + 2;
+                this.speedX = isBurst ? (Math.random() - 0.5) * 7 : (Math.random() - 0.5) * 1.5;
+                this.speedY = isBurst ? (Math.random() - 0.5) * 7 : (Math.random() - 0.5) * 1.5; 
+                this.life = 1.0; 
+                this.decay = isBurst ? Math.random() * 0.02 + 0.015 : Math.random() * 0.04 + 0.02;
+                this.angle = Math.random() * Math.PI;
+                this.color = Math.random() > 0.5 ? '#fde047' : '#ffffff'; 
+            }
+        }
+
+        // Mini-Game Logic Functions
+        function toggleGame() {
+            gameActive = !gameActive;
+            const ui = document.getElementById('gameUI');
+            ui.classList.toggle('active', gameActive);
+            if (gameActive) {
+                gameScore = 0;
+                document.getElementById('gameScore').innerText = gameScore;
+                spawnGameStars();
+            } else {
+                gameStars = [];
+            }
+        }
+
+        function spawnGameStars() {
+            if (!gameActive) return;
+            gameStars.push({
+                x: Math.random() * (iCanvas.width - 60) + 30,
+                y: -30,
+                speed: Math.random() * 2 + 1.5,
+                size: Math.random() * 8 + 12
+            });
+            setTimeout(spawnGameStars, 900);
+        }
+
+        // Event Trigger Triple-Click pada Avatar
+        document.querySelector('.avatar-container').addEventListener('click', (e) => {
+            if (e.detail === 3) {
+                toggleGame();
+                playClickSfx();
+            }
+        });
+
+        window.addEventListener('mousemove', (e) => { for(let i=0; i<1; i++) starTrail.push(new StarParticle(e.clientX, e.clientY, false)); });
+        window.addEventListener('touchmove', (e) => { for(let i=0; i<1; i++) starTrail.push(new StarParticle(e.touches[0].clientX, e.touches[0].clientY, false)); });
+        
+        window.addEventListener('click', (e) => { 
+            // Cek jika sedang main game, tangkap bintang jika diklik
+            if (gameActive) {
+                gameStars.forEach((s, index) => {
+                    const dist = Math.hypot(e.clientX - s.x, e.clientY - s.y);
+                    if (dist < s.size + 25) {
+                        gameScore++;
+                        document.getElementById('gameScore').innerText = gameScore;
+                        for(let i=0; i<15; i++) starTrail.push(new StarParticle(s.x, s.y, true));
+                        gameStars.splice(index, 1);
+                        playClickSfx();
+                    }
+                });
+            }
+
+            for(let i=0; i<18; i++) starTrail.push(new StarParticle(e.clientX, e.clientY, true)); 
+        });
+
+        function startSystem() {
+            const music = document.getElementById('bgMusic');
+            const musicIcon = document.getElementById('musicIcon');
+            const eq = document.getElementById('heavenEq');
+
+            music.play().then(() => {
+                musicIcon.className = "fa-solid fa-volume-high";
+                eq.classList.remove('paused');
+            }).catch(e => console.log("Autoplay ditolak:", e));
+
+            document.getElementById('startScreen').classList.add('hidden');
+
+            setTimeout(() => {
+                document.getElementById('flash').classList.add('active');
+                setTimeout(() => document.getElementById('flash').classList.remove('active'), 700);
+                document.getElementById('gateContainer').classList.add('open');
+                for(let i=0; i<40; i++) starTrail.push(new StarParticle(window.innerWidth/2, window.innerHeight/2, true));
+            }, 200);
+
+            setTimeout(() => {
+                const wrapper = document.getElementById('cardWrapper');
+                wrapper.classList.add('show');
+                setTimeout(() => wrapper.classList.add('floating'), 1200);
+            }, 600);
+        }
+
+        function toggleMusic() {
+            const music = document.getElementById('bgMusic');
+            const icon = document.getElementById('musicIcon');
+            const eq = document.getElementById('heavenEq');
+
+            if (music.paused) { 
+                music.play(); 
+                icon.className = "fa-solid fa-volume-high"; 
+                eq.classList.remove('paused');
+            } else { 
+                music.pause(); 
+                icon.className = "fa-solid fa-volume-xmark"; 
+                eq.classList.add('paused');
+            }
+        }
+
+        function switchTab(tabId, btn) {
+            const sfx = document.getElementById('clickSfx');
+            sfx.currentTime = 0; sfx.play();
+
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function playClickSfx() {
+            const sfx 
+            = document.getElementById('clickSfx');
+            sfx.currentTime = 0; sfx.play();
+        }
+
+        function copyText(text) {
+            const sfx = document.getElementById('copySfx');
+            sfx.currentTime = 0; sfx.play();
+
+            navigator.clipboard.writeText(text).then(() => {
+                const toast = document.getElementById('toast');
+                const t = translations[currentLang];
+                toast.innerText = currentLang === 'id' ? `Tersalin: "${text}"` : `Copied: "${text}"`;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2500);
+            });
+        }
+    </script>
+</body>
+</html>
